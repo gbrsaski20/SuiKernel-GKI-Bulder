@@ -60,6 +60,10 @@ log "--- gki_defconfig ---"
 make $FLAGS gki_defconfig > "$workdir/config.log" 2>&1 || {
   log "FATAL: defconfig failed"; tail -30 "$workdir/config.log"; exit 1; }
 
+# vendor drivers (YamadaKSUCore) trip -Wunused-variable; gki_defconfig turns
+# that into a hard error, which is not what we want for a custom build
+sed -i 's/^CONFIG_WERROR=y/# CONFIG_WERROR is not set/' out/.config
+
 # deterministic vermagic so the release is reproducible
 sed -i '/^CONFIG_LOCALVERSION=/d' out/.config
 echo "CONFIG_LOCALVERSION=\"${LOCALVERSION_SUFFIX}\"" >> out/.config
