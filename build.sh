@@ -341,7 +341,8 @@ fi
 # CI publish: this fork has no Telegram, so push a release
 # to a repo we control and download the zip from there.
 # ==========================================================
-ZIP_PATH=$(ls -1 "$workdir"/SuiKernel-*.zip 2>/dev/null | head -1 || true)
+ZIP_PATH=$(ls -1 "$workdir"/*.zip 2>/dev/null | head -1 || true)
+log "zip candidates:"; ls -1 "$workdir"/*.zip 2>/dev/null || true
 if [ -n "${ZIP_PATH:-}" ] && [ -n "${GH_TOKEN:-}" ] && command -v gh >/dev/null 2>&1; then
   TAG="ci-$(date +%Y%m%d-%H%M%S)"
   log "Publishing $(basename "$ZIP_PATH") as release $TAG"
