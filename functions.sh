@@ -154,3 +154,12 @@ error() {
   fi
   exit 1
 }
+
+# ==========================================================
+# CI override for this fork: no Telegram, no chat dependency
+# Defined last so they win over the originals above.
+# ==========================================================
+upload_file() { echo "[ci] upload_file skipped: $1"; return 0; }
+reply_file()  { echo "[ci] reply_file skipped: $2"; return 0; }
+send_msg()    { echo '{"ok":true,"result":{"message_id":0}}'; return 0; }
+reply_msg()   { echo "[ci] reply_msg skipped"; return 0; }
