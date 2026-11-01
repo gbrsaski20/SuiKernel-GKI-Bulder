@@ -14,7 +14,7 @@ KERNEL_REPO="https://github.com/LoggingNewMemory/SuiKernel-android12-5.10"
 KERNEL_BRANCH="${KERNEL_BRANCH_ENV:-suikernel-stable}"
 KERNEL_DEFCONFIG="gki_defconfig"
 # Release repository
-GKI_RELEASES_REPO="https://github.com/LoggingNewMemory/SuiKernel-Release"
+GKI_RELEASES_REPO="https://github.com/gbrsaski20/SuiKernel-android12-5.10"
 # Clang
 CLANG_URL="https://github.com/LineageOS/android_prebuilts_clang_kernel_linux-x86_clang-r416183b"
 CLANG_BRANCH="lineage-20.0"
