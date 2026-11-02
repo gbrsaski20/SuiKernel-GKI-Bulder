@@ -230,8 +230,36 @@ for MODE in "${MODES[@]}"; do
     
     log "Internal kernel version set to: ${CURRENT_KERNEL_RELEASE_NAME}"
 
+    # --- POWER TUNING (battery, keep multitasking) ---
+    # config() edits the defconfig file, so this must run before the defconfig
+    # is generated into out/.config.
+    log "Applying power tuning..."
+    for opt in KASAN KASAN_HW_TAGS KFENCE UBSAN UBSAN_TRAP UBSAN_LOCAL_BOUNDS \
+               PAGE_OWNER PAGE_PINNER DEBUG_MEMORY_INIT SCHEDSTATS WQ_WATCHDOG \
+               DETECT_HUNG_TASK DEBUG_KINFO TRACE_MMIO_ACCESS DEBUG_INFO \
+               DEBUG_INFO_DWARF4 FUNCTION_ERROR_INJECTION HIST_TRIGGERS \
+               ANDROID_DEBUG_SYMBOLS CMA_DEBUGFS BUG_ON_DATA_CORRUPTION; do
+        config --disable "CONFIG_$opt" >/dev/null 2>&1 || true
+    done
+    # an oops must not leave the phone black-screened forever
+    config --disable CONFIG_PANIC_ON_OOPS >/dev/null 2>&1 || true
+    config --set-str CONFIG_PANIC_TIMEOUT "0" >/dev/null 2>&1 || true
+    # keep the kernel thermal zones alive: the vendor "disable thermal" feature
+    # switches every zone off, so the SoC cooks itself and drains faster
+    config --disable CONFIG_ANYA_MELFISSA_THERMAL >/dev/null 2>&1 || true
+    # things that keep multitasking smooth - make sure they stay on
+    for opt in SCHED_MC UCLAMP_TASK UCLAMP_TASK_GROUP ENERGY_MODEL PSI ZRAM \
+               ZRAM_LZ4_COMPRESS YAMADA_TOUCH_BOOST YAMADA_TENEBRION \
+               SCHEDUTIL_ENFORCER KUREIJI_OLLIE_AFFINITY AIRANI_IOFIFTEEN_CPUSET \
+               SPARXIE_SWAP_TUNER MOONA_HOSHINOVA_ZRAM; do
+        config --enable "CONFIG_$opt" >/dev/null 2>&1 || true
+    done
+
     log "Generating config..."
     make $BUILD_FLAGS $KERNEL_DEFCONFIG
+    log "--- power tuning result ---"
+    grep -E "^(CONFIG_(KASAN|KFENCE|UBSAN|PAGE_OWNER|SCHEDSTATS|DEBUG_INFO|PANIC_ON_OOPS|ANYA_MELFISSA_THERMAL|YAMADA_TOUCH_BOOST|YAMADA_TENEBRION|MOONA_HOSHINOVA_ZRAM|SPARXIE_SWAP_TUNER|SCHEDUTIL_ENFORCER|UCLAMP_TASK|ENERGY_MODEL|PSI|ZRAM)=|# CONFIG_(KASAN|KFENCE|UBSAN|PAGE_OWNER|SCHEDSTATS|DEBUG_INFO|PANIC_ON_OOPS|ANYA_MELFISSA_THERMAL) is not set)" out/.config \
+      | sort | while read -r line; do log "  cfg: $line"; done
 
     log "Building kernel..."
     make $BUILD_FLAGS Image modules
